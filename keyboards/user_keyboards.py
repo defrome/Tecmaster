@@ -23,6 +23,6 @@ builder.row(
 
 back = InlineKeyboardBuilder()
 
-builder.row(
+back.row(
     InlineKeyboardButton(text='Назад', callback_data="start")
 )
