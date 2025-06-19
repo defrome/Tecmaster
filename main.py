@@ -7,6 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, PhotoSize, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from keyboards.user_keyboards import builder
+from states.states import CatalogStates
 
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
