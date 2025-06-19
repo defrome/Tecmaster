@@ -6,7 +6,7 @@ from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, PhotoSize, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from keyboards.user_keyboards import builder
+from keyboards.user_keyboards import builder, back
 from states.states import CatalogStates
 
 # Включаем логирование, чтобы не пропустить важные сообщения
@@ -29,7 +29,6 @@ async def cmd_start(message: types.Message):
                         "«Не просто красим — создаём совершенство!»",
 
                          reply_markup=builder.as_markup())
-
 
 @dp.callback_query(F.data == "catalog")
 async def handle_catalog(callback: types.CallbackQuery, state: FSMContext):
@@ -89,6 +88,22 @@ async def handle_catalog(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.answer("⚠️ Ошибка загрузки каталога. Попробуйте позже.")
 
 
+@dp.callback_query(F.data == "about")
+async def handle_about(callback: types.CallbackQuery, state: FSMContext):
+    try:
+        await callback.answer()
+
+        await state.clear()
+
+        await callback.message.edit_text(
+            text="Кто мы? \n\nВ области промышленных решений мы предлагаем технологически совершенное оборудование и системы для нанесения жидких покрытий, порошковых покрытий и красок на различные поверхности. Профессионалы используют наши надежные и высокоэффективные аппараты, оснащенные самыми современными технологиями. Для любителей и мастеров компания Wagner производит широкий ассортимент удобной и многофункциональной продукции бытового сегмента для успешной реализации любых проектов. Мы устанавливаем новые стандартны в области обработки поверхностей. Благодаря инновационным и эффективным технологическим решениям, наша продукция является по настоящему полезной для клиентов.",
+            reply_markup=back.as_markup(),
+            parse_mode="HTML",
+        )
+
+    except Exception as e:
+        logger.error(f"Catalog error: {e}")
+        await callback.message.answer("⚠️ Ошибка загрузки страницы. Попробуйте позже.")
 
 
 # Запуск процесса поллинга новых апдейтов
