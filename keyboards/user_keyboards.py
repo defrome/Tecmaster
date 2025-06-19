@@ -21,10 +21,6 @@ builder.row(
     InlineKeyboardButton(text="🌐 Наш сайт", url="https://wagner.ru"),
 )
 
-builder.row(
-    InlineKeyboardButton(text="Назад", callback_data="home")
-)
-
 back = InlineKeyboardBuilder()
 
 back.row(
