@@ -18,7 +18,7 @@ builder.row(
 
 # Кнопка с ссылкой (отдельный ряд)
 builder.row(
-    InlineKeyboardButton(text="🌐 Наш сайт", url="https://wagner.ru"),
+    InlineKeyboardButton(text="🌐 Наш сайт", url="https://tecmaster.ru"),
 )
 
 back = InlineKeyboardBuilder()
