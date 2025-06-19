@@ -21,8 +21,7 @@ logger = logging.getLogger(__name__)
 bot = Bot(token="7783836620:AAEKekan25gE2N6UOw3_xMWaHDVUSEh_Gc0")
 dp = Dispatcher()
 
-# Глобальные переменные
-user_cart = {}
+
 
 
 # Обработчики
