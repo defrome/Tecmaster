@@ -119,7 +119,7 @@ async def handle_about(callback: types.CallbackQuery, state: FSMContext):
         logger.error(f"Catalog error: {e}")
         await callback.message.answer("⚠️ Ошибка загрузки страницы. Попробуйте позже.")
 
-
+# Здесь будет обработчик корзины
 @dp.callback_query(F.data == "cart")
 async def handle_cart(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
