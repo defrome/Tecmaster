@@ -27,13 +27,39 @@ user_cart = {}
 
 user = User
 
+
 # Хэндлер на команду /start
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    await message.answer("WAGNER — ТВОЙ ВЫСОКОТЕХНОЛОГИЧНЫЙ ПОМОЩНИК В МИРЕ ОКРАСКИ! 🚀\n\n"
-                        "«Не просто красим — создаём совершенство!»",
+    try:
+        caption = (
+            "🎨 <b>TECMASTER</b> – символ передовых технологий в области механизированной окраски\n\n"
+            "🔹 <i>Профессиональные решения</i> для любых задач\n"
+            "🔹 <i>Доступные инструменты</i> для частных мастеров\n"
+            "🔹 <i>Инновационные подходы</i> в нанесении покрытий\n\n"
+            "Выберите интересующий раздел:"
+        )
 
-                         reply_markup=builder.as_markup())
+        # Отправка сообщения с фото
+        await message.answer_photo(
+            photo='AgACAgIAAxkBAANmaFRviIs0dpywgA9Fq9gY9yS6CNsAAgL6MRuMHKBKSVown6eez1wBAAMCAAN5AAM2BA',
+            caption=caption,
+            reply_markup=builder.as_markup(),
+            parse_mode="HTML"
+        )
+
+        # Дополнительное текстовое сообщение с призывом к действию
+        await message.answer(
+            "💡 <b>Новым клиентам скидка 10% по промокоду:</b> <code>WELCOME10</code>",
+            parse_mode="HTML"
+        )
+
+    except Exception as e:
+        logger.error(f"Start command error: {e}")
+        await message.answer(
+            "⚠️ Произошла ошибка при загрузке данных. Пожалуйста, попробуйте позже."
+        )
+
 
 @dp.callback_query(F.data == "home")
 async def handle_home(callback: types.CallbackQuery, state: FSMContext):
@@ -43,6 +69,7 @@ async def handle_home(callback: types.CallbackQuery, state: FSMContext):
         reply_markup=builder.as_markup(),
         parse_mode="HTML"
     )
+
 
 @dp.callback_query(F.data == "catalog")
 async def handle_catalog(callback: types.CallbackQuery, state: FSMContext):
@@ -119,6 +146,7 @@ async def handle_about(callback: types.CallbackQuery, state: FSMContext):
         logger.error(f"Catalog error: {e}")
         await callback.message.answer("⚠️ Ошибка загрузки страницы. Попробуйте позже.")
 
+
 # Здесь будет обработчик корзины
 @dp.callback_query(F.data == "cart")
 async def handle_cart(callback: types.CallbackQuery, state: FSMContext):
@@ -129,11 +157,21 @@ async def handle_cart(callback: types.CallbackQuery, state: FSMContext):
     )
 
 
+@dp.message(lambda msg: msg.photo)  # Ловим любое фото
+async def handle_photo(message: types.Message):
+    file_id = message.photo[-1].file_id  # Берём ID в максимальном качестве
+    await message.answer(
+        f"🖼 <b>Фото принято!</b>\n"
+        f"🔑 <code>{file_id}</code> — твой file_id\n"
+        f"Используй его для сохранения или пересылки!",
+        parse_mode="HTML"
+    )
 
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
