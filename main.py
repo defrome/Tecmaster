@@ -30,6 +30,15 @@ async def cmd_start(message: types.Message):
 
                          reply_markup=builder.as_markup())
 
+@dp.callback_query(F.data == "home")
+async def handle_home(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.edit_text(
+        text="WAGNER — ТВОЙ ВЫСОКОТЕХНОЛОГИЧНЫЙ ПОМОЩНИК В МИРЕ ОКРАСКИ! 🚀\n\n"
+             "«Не просто красим — создаём совершенство!»",
+        reply_markup=builder.as_markup(),
+        parse_mode="HTML"
+    )
+
 @dp.callback_query(F.data == "catalog")
 async def handle_catalog(callback: types.CallbackQuery, state: FSMContext):
     try:
