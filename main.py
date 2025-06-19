@@ -2,6 +2,7 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher, types, F, Router
 from aiogram.client.default import DefaultBotProperties
+from aiogram.types.user import User
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, PhotoSize, Message
@@ -21,6 +22,10 @@ bot = Bot(token="7783836620:AAEKekan25gE2N6UOw3_xMWaHDVUSEh_Gc0")
 dp = Dispatcher()
 
 router = Router()
+
+user_cart = {}
+
+user = User
 
 # Хэндлер на команду /start
 @dp.message(Command("start"))
@@ -113,6 +118,17 @@ async def handle_about(callback: types.CallbackQuery, state: FSMContext):
     except Exception as e:
         logger.error(f"Catalog error: {e}")
         await callback.message.answer("⚠️ Ошибка загрузки страницы. Попробуйте позже.")
+
+
+@dp.callback_query(F.data == "cart")
+async def handle_cart(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.edit_text(
+        text="В разработке",
+        reply_markup=back.as_markup(),
+        parse_mode="HTML",
+    )
+
+
 
 
 # Запуск процесса поллинга новых апдейтов
