@@ -75,8 +75,8 @@ async def handle_catalog(callback: types.CallbackQuery, state: FSMContext):
                 switch_inline_query_current_chat=""
             ),
             types.InlineKeyboardButton(
-                text="📚 PDF-каталог",
-                url="https://wagner.com/catalog.pdf"
+                text="Назад",
+                callback_data="home"
             )
         )
 
