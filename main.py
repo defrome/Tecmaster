@@ -5,6 +5,7 @@ from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.handlers import message
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from dataclasses import dataclass
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from keyboards.user_keyboards import builder, back
@@ -21,6 +22,12 @@ logger = logging.getLogger(__name__)
 bot = Bot(token="7783836620:AAEKekan25gE2N6UOw3_xMWaHDVUSEh_Gc0")
 dp = Dispatcher()
 
+@dataclass
+class CartItem:
+    product_id: int
+    name: str
+    price: float
+    quantity: int
 
 
 
@@ -147,6 +154,9 @@ async def handle_catalog(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.answer("⚠️ Ошибка загрузки каталога. Попробуйте позже.")
 
 async def add_to_cart(callback: types.CallbackQuery, state: FSMContext):
+    await state.clear()
+
+
 
 @dp.callback_query(F.data == "about")
 async def handle_about(callback: types.CallbackQuery, state: FSMContext):
