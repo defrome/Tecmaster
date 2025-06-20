@@ -25,6 +25,11 @@ last_message_id = None
 
 cart = {}
 
+products_list = [
+            {"id": "1", "description": "Test"},
+            {"id": "2", "description": "Test"},
+            {"id": "3", "description": "Test"}
+        ]
 
 async def delete_previous_message(chat_id: int):
     global last_message_id
@@ -178,30 +183,61 @@ async def handle_catalog(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.answer("⚠️ Ошибка загрузки каталога. Попробуйте позже.")
 
 
-@dp.callback_query(F.data == 'catalog:pro')
-async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
+pro_products = [
+    {
+        "id": "pro1",
+        "name": "Профессиональный окрасочный аппарат X500",
+        "price": 125000,
+        "description": "Мощный аппарат для профессионального использования"
+    },
+    {
+        "id": "pro2",
+        "name": "Промышленный распылитель W850",
+        "price": 189000,
+        "description": "Высокопроизводительный распылитель для промышленных работ"
+    },
+    {
+        "id": "pro3",
+        "name": "Компрессорная станция PRO-3000",
+        "price": 235000,
+        "description": "Профессиональная компрессорная станция"
+    }
+]
+
+
+@dp.callback_query(F.data.startswith('product:'))
+async def handle_product(callback: types.CallbackQuery, state: FSMContext):
     global last_message_id
     try:
         await callback.answer()
         await state.clear()
         await delete_previous_message(callback.message.chat.id)
 
-        pro_products = [
-            {"id": "pro1", "name": "Профессиональный окрасочный аппарат X500", "price": 125000},
-            {"id": "pro2", "name": "Промышленный распылитель W850", "price": 189000},
-            {"id": "pro3", "name": "Компрессорная станция PRO-3000", "price": 235000}
-        ]
+        product_id = callback.data.split(':')[1]
+        # Находим продукт в списке
+        product = next((p for p in pro_products if p['id']), None)
+
+        if not product:
+            await callback.message.answer("Товар не найден")
+            return
 
         builder = InlineKeyboardBuilder()
 
-        for product in pro_products:
-            builder.row(
-                InlineKeyboardButton(
-                    text=f"{product['name']} - {product['price']}₽",
-                    callback_data=f"product:{product['id']}"
-                ),
-                width=1
-            )
+        builder.row(
+            InlineKeyboardButton(
+                text='📝 Описание товара',
+                callback_data=f"product_description:{product['id']}"
+            ),
+            width=1
+        )
+
+        builder.row(
+            InlineKeyboardButton(
+                text='🛒 Добавить в корзину',
+                callback_data=f"add_to_cart:{product['id']}"
+            ),
+            width=1
+        )
 
         builder.row(
             InlineKeyboardButton(
@@ -215,21 +251,29 @@ async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
             width=2
         )
 
+        product_info = (
+            f"<b>{product['name']}</b>\n\n"
+            f"💵 Цена: {product['price']}₽\n"
+            f"📦 Артикул: {product['id']}\n\n"
+        )
+
         msg = await callback.message.answer(
-            text="<b>🔧 Профессиональное оборудование</b>\n\n"
-                 "Выберите товар из категории:",
+            text=product_info,
             reply_markup=builder.as_markup(),
             parse_mode="HTML"
         )
         last_message_id = msg.message_id
 
-        await state.set_state(CatalogStates.viewing_pro_category)
-        await state.update_data(category="pro", products=pro_products)
+        await state.set_state(CatalogStates.viewing_item)
+        await state.update_data(
+            current_product=product,
+            previous_category="pro"
+        )
 
     except Exception as e:
-        logger.error(f"Pro catalog error: {e}", exc_info=True)
+        logger.error(f"Product error: {e}", exc_info=True)
         await callback.message.answer(
-            "⚠️ Произошла ошибка при загрузке профессионального каталога",
+            "⚠️ Произошла ошибка при загрузке товара",
             reply_markup=back.as_markup()
         )
 
