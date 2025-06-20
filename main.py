@@ -1,13 +1,9 @@
 import asyncio
 import logging
-from typing import Dict, List
-
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.handlers import message
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from dataclasses import dataclass
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from keyboards.user_keyboards import builder, back
@@ -24,11 +20,27 @@ logger = logging.getLogger(__name__)
 bot = Bot(token="7783836620:AAEKekan25gE2N6UOw3_xMWaHDVUSEh_Gc0")
 dp = Dispatcher()
 
+# Глобальная переменная для хранения ID последнего сообщения
+last_message_id = None
+
+
+async def delete_previous_message(chat_id: int):
+    global last_message_id
+    if last_message_id:
+        try:
+            await bot.delete_message(chat_id=chat_id, message_id=last_message_id)
+        except Exception as e:
+            logger.warning(f"Не удалось удалить сообщение: {e}")
+        last_message_id = None
+
 
 # Обработчики
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
+    global last_message_id
     try:
+        await delete_previous_message(message.chat.id)
+
         caption = (
             "   <b>TECMASTER</b> – символ передовых технологий в области механизированной окраски\n\n"
             "🔹 <i>Профессиональные решения</i> для любых задач\n"
@@ -37,17 +49,13 @@ async def cmd_start(message: types.Message):
             "Выберите интересующий раздел:"
         )
 
-        await message.answer_photo(
+        msg = await message.answer_photo(
             photo='AgACAgIAAxkBAANmaFRviIs0dpywgA9Fq9gY9yS6CNsAAgL6MRuMHKBKSVown6eez1wBAAMCAAN5AAM2BA',
             caption=caption,
             reply_markup=builder.as_markup(),
             parse_mode="HTML"
         )
-
-        await message.answer(
-            "💡 <b>Новым клиентам скидка 10% по промокоду:</b> <code>WELCOME10</code>",
-            parse_mode="HTML"
-        )
+        last_message_id = msg.message_id
 
     except Exception as e:
         logger.error(f"Start command error: {e}")
@@ -56,11 +64,11 @@ async def cmd_start(message: types.Message):
 
 @dp.callback_query(F.data == "home")
 async def handle_home(callback: types.CallbackQuery, state: FSMContext):
+    global last_message_id
     try:
-        await callback.answer()  # Подтверждаем получение callback
-
-        # Очищаем состояние
+        await callback.answer()
         await state.clear()
+        await delete_previous_message(callback.message.chat.id)
 
         caption = (
             "   <b>TECMASTER</b> – символ передовых технологий в области механизированной окраски\n\n"
@@ -70,13 +78,13 @@ async def handle_home(callback: types.CallbackQuery, state: FSMContext):
             "Выберите интересующий раздел:"
         )
 
-        await callback.message.answer_photo(
+        msg = await callback.message.answer_photo(
             photo='AgACAgIAAxkBAANmaFRviIs0dpywgA9Fq9gY9yS6CNsAAgL6MRuMHKBKSVown6eez1wBAAMCAAN5AAM2BA',
             caption=caption,
             reply_markup=builder.as_markup(),
             parse_mode="HTML"
         )
-
+        last_message_id = msg.message_id
 
     except Exception as e:
         logger.error(f"Home error: {e}")
@@ -88,9 +96,11 @@ async def handle_home(callback: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query(F.data == "catalog")
 async def handle_catalog(callback: types.CallbackQuery, state: FSMContext):
+    global last_message_id
     try:
         await callback.answer()
         await state.clear()
+        await delete_previous_message(callback.message.chat.id)
 
         builder = InlineKeyboardBuilder()
         builder.row(
@@ -125,21 +135,13 @@ async def handle_catalog(callback: types.CallbackQuery, state: FSMContext):
             )
         )
 
-        # Проверяем тип сообщения перед редактированием
-        if callback.message.content_type == "text":
-            await callback.message.edit_text(
-                text="<b>🏗 Каталог оборудования Wagner</b>\n\n"
-                     "Выберите категорию оборудования:",
-                reply_markup=builder.as_markup(),
-                parse_mode="HTML"
-            )
-        else:
-            await callback.message.answer(
-                text="<b>🏗 Каталог оборудования Wagner</b>\n\n"
-                     "Выберите категорию оборудования:",
-                reply_markup=builder.as_markup(),
-                parse_mode="HTML"
-            )
+        msg = await callback.message.answer(
+            text="<b>🏗 Каталог оборудования Wagner</b>\n\n"
+                 "Выберите категорию оборудования:",
+            reply_markup=builder.as_markup(),
+            parse_mode="HTML"
+        )
+        last_message_id = msg.message_id
 
         await state.set_state(CatalogStates.viewing_catalog)
 
@@ -147,17 +149,15 @@ async def handle_catalog(callback: types.CallbackQuery, state: FSMContext):
         logger.error(f"Catalog error: {e}")
         await callback.message.answer("⚠️ Ошибка загрузки каталога. Попробуйте позже.")
 
-async def add_to_cart(callback: types.CallbackQuery, state: FSMContext):
-    await state.clear()
-
 
 @dp.callback_query(F.data == 'catalog:pro')
 async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
+    global last_message_id
     try:
         await callback.answer()
         await state.clear()
+        await delete_previous_message(callback.message.chat.id)
 
-        # Получаем товары из БД (заглушка)
         pro_products = [
             {"id": "pro1", "name": "Профессиональный окрасочный аппарат X500", "price": 125000},
             {"id": "pro2", "name": "Промышленный распылитель W850", "price": 189000},
@@ -166,7 +166,6 @@ async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
 
         builder = InlineKeyboardBuilder()
 
-        # Добавляем товары в клавиатуру
         for product in pro_products:
             builder.row(
                 InlineKeyboardButton(
@@ -176,7 +175,6 @@ async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
                 width=1
             )
 
-        # Кнопки управления
         builder.row(
             InlineKeyboardButton(
                 text="↩️ Назад в каталог",
@@ -189,15 +187,14 @@ async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
             width=2
         )
 
-        # Отправляем сообщение
-        await callback.message.edit_text(
+        msg = await callback.message.answer(
             text="<b>🔧 Профессиональное оборудование</b>\n\n"
                  "Выберите товар из категории:",
             reply_markup=builder.as_markup(),
             parse_mode="HTML"
         )
+        last_message_id = msg.message_id
 
-        # Сохраняем состояние просмотра категории
         await state.set_state(CatalogStates.viewing_pro_category)
         await state.update_data(category="pro", products=pro_products)
 
@@ -209,13 +206,13 @@ async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
         )
 
 
-
 @dp.callback_query(F.data == 'catalog:home')
 async def get_catalog_home(callback: types.CallbackQuery, state: FSMContext):
+    global last_message_id
     try:
-
         await callback.answer()
         await state.clear()
+        await delete_previous_message(callback.message.chat.id)
 
         home_products = [
             {"id": "home1", "name": "test1", "price": 125000},
@@ -223,7 +220,7 @@ async def get_catalog_home(callback: types.CallbackQuery, state: FSMContext):
             {"id": "home3", "name": "test3", "price": 235000}
         ]
 
-        builder =  InlineKeyboardBuilder()
+        builder = InlineKeyboardBuilder()
 
         for product in home_products:
             builder.row(
@@ -246,12 +243,13 @@ async def get_catalog_home(callback: types.CallbackQuery, state: FSMContext):
             width=2
         )
 
-        await callback.message.edit_text(
+        msg = await callback.message.answer(
             text="<b>🔧 Оборудование для дома</b>\n\n"
                  "Выберите товар из категории:",
             reply_markup=builder.as_markup(),
             parse_mode="HTML"
         )
+        last_message_id = msg.message_id
 
         await state.set_state(CatalogStates.viewing_home_category)
         await state.update_data(category="home", products=home_products)
@@ -264,12 +262,13 @@ async def get_catalog_home(callback: types.CallbackQuery, state: FSMContext):
         )
 
 
-
 @dp.callback_query(F.data == "about")
 async def handle_about(callback: types.CallbackQuery, state: FSMContext):
+    global last_message_id
     try:
         await callback.answer()
         await state.clear()
+        await delete_previous_message(callback.message.chat.id)
 
         about_text = (
             "Кто мы?\n\n"
@@ -282,18 +281,12 @@ async def handle_about(callback: types.CallbackQuery, state: FSMContext):
             "эффективным технологическим решениям, наша продукция является по настоящему полезной для клиентов."
         )
 
-        if callback.message.content_type == "text":
-            await callback.message.edit_text(
-                text=about_text,
-                reply_markup=back.as_markup(),
-                parse_mode="HTML"
-            )
-        else:
-            await callback.message.answer(
-                text=about_text,
-                reply_markup=back.as_markup(),
-                parse_mode="HTML"
-            )
+        msg = await callback.message.answer(
+            text=about_text,
+            reply_markup=back.as_markup(),
+            parse_mode="HTML"
+        )
+        last_message_id = msg.message_id
 
     except Exception as e:
         logger.error(f"About error: {e}")
@@ -302,26 +295,21 @@ async def handle_about(callback: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query(F.data == "cart")
 async def handle_cart(callback: types.CallbackQuery, state: FSMContext):
+    global last_message_id
     try:
         await callback.answer()
         await state.clear()
-        if callback.message.content_type == "text":
-            await callback.message.edit_text(
-                text="🛒 Ваша корзина пуста\n\n"
-                     "Добавьте товары из каталога!",
-                reply_markup=back.as_markup(),
-                parse_mode="HTML"
-            )
-        else:
-            await callback.message.answer(
-                text="🛒 Ваша корзина пуста\n\n"
-                     "Добавьте товары из каталога!",
-                reply_markup=back.as_markup(),
-                parse_mode="HTML"
-            )
+        await delete_previous_message(callback.message.chat.id)
+
+        msg = await callback.message.answer(
+            text="🛒 Ваша корзина пуста\n\n"
+                 "Добавьте товары из каталога!",
+            reply_markup=back.as_markup(),
+            parse_mode="HTML"
+        )
+        last_message_id = msg.message_id
 
         await state.set_state(CartStates.viewing_cart)
-
 
     except Exception as e:
         logger.error(f"Cart error: {e}")
@@ -341,13 +329,6 @@ async def handle_photo(message: types.Message):
     except Exception as e:
         logger.error(f"Photo error: {e}")
         await message.answer("⚠️ Ошибка обработки фото. Попробуйте ещё раз.")
-
-
-
-
-
-
-
 
 
 async def main():
