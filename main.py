@@ -262,6 +262,62 @@ async def get_catalog_home(callback: types.CallbackQuery, state: FSMContext):
         )
 
 
+@dp.callback_query(F.data == 'catalog:industrial')
+async def get_industrial_catalog(callback: types.CallbackQuery, state: FSMContext):
+    global last_message_id
+    try:
+        await callback.answer()
+        await state.clear()
+        await delete_previous_message(callback.message.chat.id)
+
+        industrial_products = [
+            {"id": "pro1", "name": "Профессиональный окрасочный аппарат X500", "price": 125000},
+            {"id": "pro2", "name": "Промышленный распылитель W850", "price": 189000},
+            {"id": "pro3", "name": "Компрессорная станция PRO-3000", "price": 235000}
+        ]
+
+        builder = InlineKeyboardBuilder()
+
+        for product in industrial_products:
+            builder.row(
+                InlineKeyboardButton(
+                    text=f"{product['name']} - {product['price']}₽",
+                    callback_data=f"product:{product['id']}"
+                ),
+                width=1
+            )
+
+        builder.row(
+            InlineKeyboardButton(
+                text="↩️ Назад в каталог",
+                callback_data="catalog"
+            ),
+            InlineKeyboardButton(
+                text="🏠 На главную",
+                callback_data="home"
+            ),
+            width=2
+        )
+
+        msg = await callback.message.answer(
+            text="<b>🔧 Индустриальное оборудование</b>\n\n"
+                 "Выберите товар из категории:",
+            reply_markup=builder.as_markup(),
+            parse_mode="HTML"
+        )
+        last_message_id = msg.message_id
+
+        await state.set_state(CatalogStates.viewing_industrial_category)
+        await state.update_data(category="industrial", products=industrial_products)
+
+    except Exception as e:
+        logger.error(f"Pro catalog error: {e}", exc_info=True)
+        await callback.message.answer(
+            "⚠️ Произошла ошибка при загрузке профессионального каталога",
+            reply_markup=back.as_markup()
+        )
+
+
 @dp.callback_query(F.data == "about")
 async def handle_about(callback: types.CallbackQuery, state: FSMContext):
     global last_message_id
