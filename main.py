@@ -394,7 +394,7 @@ async def get_industrial_catalog(callback: types.CallbackQuery, state: FSMContex
     except Exception as e:
         logger.error(f"Home catalog error: {e}", exc_info=True)
         await callback.message.answer(
-            "⚠️ Произошла ошибка при загрузке домашнего каталога",
+            "⚠️ Произошла ошибка при загрузке каталога",
             reply_markup=back.as_markup()
         )
 
