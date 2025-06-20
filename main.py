@@ -214,6 +214,17 @@ async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
 async def get_catalog_home(callback: types.CallbackQuery, state: FSMContext):
     try:
 
+        await callback.answer()
+        await state.clear()
+
+        home_products = [
+            {"id": "pro1", "name": "test1", "price": 125000},
+            {"id": "pro2", "name": "test2", "price": 189000},
+            {"id": "pro3", "name": "test3", "price": 235000}
+        ]
+
+        builder =  InlineKeyboardBuilder()
+
 
 
 @dp.callback_query(F.data == "about")
