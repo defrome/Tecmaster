@@ -238,6 +238,62 @@ async def handle_photo(message: types.Message):
         logger.error(f"Photo error: {e}")
         await message.answer("⚠️ Ошибка обработки фото. Попробуйте ещё раз.")
 
+def get_cart_keyboard(cart_items: List[CartItem]):
+    builder = InlineKeyboardBuilder()
+
+    # Кнопки для каждого товара
+    for item in cart_items:
+        builder.row(
+            InlineKeyboardButton(
+                text=f"➖ {item.name}",
+                callback_data=f"cart_decrease:{item.product_id}"
+            ),
+            InlineKeyboardButton(
+                text=f"➕ {item.name}",
+                callback_data=f"cart_increase:{item.product_id}"
+            ),
+            width=2
+        )
+        builder.row(
+            InlineKeyboardButton(
+                text=f"❌ Удалить {item.name}",
+                callback_data=f"cart_remove:{item.product_id}"
+            ),
+            width=1
+        )
+
+    # Основные кнопки
+    builder.row(
+        InlineKeyboardButton(
+            text="✅ Оформить заказ",
+            callback_data="cart_checkout"
+        ),
+        width=1
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text="↩️ Назад в каталог",
+            callback_data="catalog"
+        ),
+        InlineKeyboardButton(
+            text="🔄 Обновить корзину",
+            callback_data="cart"
+        ),
+        width=2
+    )
+
+    return builder.as_markup()
+
+def empty_cart_item(cart_items: List[CartItem]):
+    builder = InlineKeyboardBuilder
+    builder.row(
+        InlineKeyboardButton(
+            text='🛒 Перейти в каталог',
+            callback_data='catalog'
+        ),
+        width=1
+    )
+    return builder.as_markup()
 
 async def main():
     await dp.start_polling(bot)
