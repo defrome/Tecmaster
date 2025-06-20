@@ -178,65 +178,29 @@ async def handle_catalog(callback: types.CallbackQuery, state: FSMContext):
 
 pro_products = [
     {
-        "id": "pro1",
-        "name": "Профессиональный окрасочный аппарат X500",
-        "price": 125000,
-        "description": "Мощный аппарат для профессионального использования"
+        "id": "473625",
+        "name": "PRO TEST",
+        "price": 28000,
+        "description": "PRO DESCRIPTION TEST"
     },
-    {
-        "id": "pro2",
-        "name": "Промышленный распылитель W850",
-        "price": 189000,
-        "description": "Высокопроизводительный распылитель для промышленных работ"
-    },
-    {
-        "id": "pro3",
-        "name": "Компрессорная станция PRO-3000",
-        "price": 235000,
-        "description": "Профессиональная компрессорная станция"
-    }
 ]
 
 home_products = [
     {
-        "id": "1",
-        "name": "Домашний окрасочный аппарат X500",
-        "price": 125000,
-        "description": "Мощный аппарат для профессионального использования"
+        "id": "154897",
+        "name": "HOME TEST",
+        "price": 12500,
+        "description": "HOME DESCRIPTION TEST"
     },
-    {
-        "id": "2",
-        "name": "Промышленный распылитель W850",
-        "price": 189000,
-        "description": "Высокопроизводительный распылитель для промышленных работ"
-    },
-    {
-        "id": "3",
-        "name": "Компрессорная станция PRO-3000",
-        "price": 235000,
-        "description": "Профессиональная компрессорная станция"
-    }
 ]
 
 industrial_products = [
     {
-        "id": "1",
-        "name": "TEST",
-        "price": 10000,
-        "description": "Мощный аппарат для профессионального использования"
+        "id": "935273",
+        "name": "INDUSTRIAL TEST",
+        "price": 28500,
+        "description": "INDUSTRIAL DESCRIPTION TEST"
     },
-    {
-        "id": "2",
-        "name": "Промышленный распылитель W850",
-        "price": 189000,
-        "description": "Высокопроизводительный распылитель для промышленных работ"
-    },
-    {
-        "id": "3",
-        "name": "Компрессорная станция PRO-3000",
-        "price": 235000,
-        "description": "Профессиональная компрессорная станция"
-    }
 ]
 
 
