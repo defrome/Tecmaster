@@ -27,8 +27,3 @@ builder.row(
     InlineKeyboardButton(text="🌐 Наш сайт", url="https://tecmaster.ru"),
 )
 
-back = InlineKeyboardBuilder()
-
-back.row(
-    InlineKeyboardButton(text='Назад', callback_data="home")
-)
