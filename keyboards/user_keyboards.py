@@ -19,11 +19,6 @@ builder.row(
 # Дополнительные кнопки (2 в ряд)
 builder.row(
     InlineKeyboardButton(text="📞 Контакты", callback_data="contacts"),
-    InlineKeyboardButton(text="🚀 Акции", callback_data="promo"),
-)
-
-# Кнопка с ссылкой (отдельный ряд)
-builder.row(
     InlineKeyboardButton(text="🌐 Наш сайт", url="https://tecmaster.ru"),
 )
 
