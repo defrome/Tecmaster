@@ -210,7 +210,9 @@ async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
 
 
 
-
+@dp.callback_query(F.data == 'catalog:home')
+async def get_catalog_home(callback: types.CallbackQuery, state: FSMContext):
+    try:
 
 
 
