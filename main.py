@@ -33,13 +33,19 @@ async def delete_previous_message(chat_id: int):
             logger.warning(f"Не удалось удалить сообщение: {e}")
         last_message_id = None
 
-
-# Обработчики
-@dp.message(Command("start"))
-async def cmd_start(message: types.Message):
+async def show_main_menu(message_or_callback, state: FSMContext):
     global last_message_id
     try:
-        await delete_previous_message(message.chat.id)
+        if isinstance(message_or_callback, types.CallbackQuery):
+            await message_or_callback.answer()
+            chat_id = message_or_callback.message.chat.id
+            reply_method = message_or_callback.message.answer_photo
+        else:
+            chat_id = message_or_callback.chat.id
+            reply_method = message_or_callback.answer_photo
+
+        await state.clear()
+        await delete_previous_message(chat_id)
 
         caption = (
             "   <b>TECMASTER</b> – символ передовых технологий в области механизированной окраски\n\n"
@@ -49,7 +55,7 @@ async def cmd_start(message: types.Message):
             "Выберите интересующий раздел:"
         )
 
-        msg = await message.answer_photo(
+        msg = await reply_method(
             photo='AgACAgIAAxkBAANmaFRviIs0dpywgA9Fq9gY9yS6CNsAAgL6MRuMHKBKSVown6eez1wBAAMCAAN5AAM2BA',
             caption=caption,
             reply_markup=builder.as_markup(),
@@ -58,40 +64,26 @@ async def cmd_start(message: types.Message):
         last_message_id = msg.message_id
 
     except Exception as e:
-        logger.error(f"Start command error: {e}")
-        await message.answer("⚠️ Произошла ошибка. Пожалуйста, попробуйте позже.")
+        logger.error(f"Main menu error: {e}")
+        error_msg = "⚠️ Произошла ошибка. Пожалуйста, попробуйте позже."
+        if isinstance(message_or_callback, types.CallbackQuery):
+            await message_or_callback.message.answer(error_msg, reply_markup=builder.as_markup())
+        else:
+            await message_or_callback.answer(error_msg)
+
+# Обработчики
+
+@dp.message(Command("start"))
+async def cmd_start(message: types.Message, state: FSMContext):
+    await delete_previous_message(message.chat.id)
+    await show_main_menu(message, state)
+
 
 
 @dp.callback_query(F.data == "home")
 async def handle_home(callback: types.CallbackQuery, state: FSMContext):
-    global last_message_id
-    try:
-        await callback.answer()
-        await state.clear()
-        await delete_previous_message(callback.message.chat.id)
-
-        caption = (
-            "   <b>TECMASTER</b> – символ передовых технологий в области механизированной окраски\n\n"
-            "🔹 <i>Профессиональные решения</i> для любых задач\n"
-            "🔹 <i>Доступные инструменты</i> для частных мастеров\n"
-            "🔹 <i>Инновационные подходы</i> в нанесении покрытий\n\n"
-            "Выберите интересующий раздел:"
-        )
-
-        msg = await callback.message.answer_photo(
-            photo='AgACAgIAAxkBAANmaFRviIs0dpywgA9Fq9gY9yS6CNsAAgL6MRuMHKBKSVown6eez1wBAAMCAAN5AAM2BA',
-            caption=caption,
-            reply_markup=builder.as_markup(),
-            parse_mode="HTML"
-        )
-        last_message_id = msg.message_id
-
-    except Exception as e:
-        logger.error(f"Home error: {e}")
-        await callback.message.answer(
-            "⚠️ Произошла ошибка при загрузке главного меню. Пожалуйста, попробуйте позже.",
-            reply_markup=builder.as_markup()
-        )
+    await delete_previous_message(callback.message.chat.id)
+    await show_main_menu(callback, state)
 
 
 @dp.callback_query(F.data == "catalog")
