@@ -9,6 +9,9 @@ builder = InlineKeyboardBuilder()
 # Основные кнопки (3 в ряд)
 builder.row(
     InlineKeyboardButton(text="🔎 Каталог", callback_data="catalog"),
+)
+
+builder.row(
     InlineKeyboardButton(text="🛒 Корзина", callback_data="cart"),
     InlineKeyboardButton(text="ℹ️ О нас", callback_data="about"),
 )
