@@ -388,7 +388,7 @@ async def get_industrial_catalog(callback: types.CallbackQuery, state: FSMContex
         )
         last_message_id = msg.message_id
 
-        await state.set_state(CatalogStates.viewing_home_category)
+        await state.set_state(CatalogStates.viewing_industrial_category)
         await state.update_data(category="industrial", products=industrial_products)
 
     except Exception as e:
@@ -524,6 +524,68 @@ async def handle_product(callback: types.CallbackQuery, state: FSMContext):
             reply_markup=back.as_markup()
         )
 
+
+@dp.callback_query(F.data.startswith('industrial_product:'))
+async def handle_product(callback: types.CallbackQuery, state: FSMContext):
+    global last_message_id
+    try:
+        await callback.answer()
+        await state.clear()
+        await delete_previous_message(callback.message.chat.id)
+
+        product_id = callback.data.split(':')[1]
+        product = next((p for p in industrial_products if p['id'] == product_id), None)
+
+        if not product:
+            await callback.message.answer("Товар не найден")
+            return
+
+        builder = InlineKeyboardBuilder()
+
+
+        builder.row(
+            InlineKeyboardButton(
+                text='🛒 Добавить в корзину',
+                callback_data=f"add_to_cart:{product['id']}"
+            ),
+            width=1
+        )
+
+        builder.row(
+            InlineKeyboardButton(
+                text="↩️ Назад в каталог",
+                callback_data="catalog:industrial"  # Возврат в нужный каталог
+            ),
+            InlineKeyboardButton(
+                text="🏠 На главную",
+                callback_data="home"
+            ),
+            width=2
+        )
+
+        product_info = (
+            f"<b>{product['name']}</b>\n\n"
+            f"💵 Цена: {product['price']}₽\n"
+            f"📦 Артикул: {product['id']}\n\n"
+            f" Характеристики: {product['description']}\n\n"
+        )
+
+        msg = await callback.message.answer(
+            text=product_info,
+            reply_markup=builder.as_markup(),
+            parse_mode="HTML"
+        )
+        last_message_id = msg.message_id
+
+        await state.set_state(CatalogStates.viewing_item)
+        await state.update_data(current_product=product)
+
+    except Exception as e:
+        logger.error(f"Product error: {e}", exc_info=True)
+        await callback.message.answer(
+            "⚠️ Произошла ошибка при загрузке товара",
+            reply_markup=back.as_markup()
+        )
 
 
 @dp.callback_query(F.data == "about")
