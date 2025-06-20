@@ -23,13 +23,6 @@ dp = Dispatcher()
 # Глобальная переменная для хранения ID последнего сообщения
 last_message_id = None
 
-cart = {}
-
-products_list = [
-            {"id": "1", "description": "Test"},
-            {"id": "2", "description": "Test"},
-            {"id": "3", "description": "Test"}
-        ]
 
 async def delete_previous_message(chat_id: int):
     global last_message_id
@@ -363,7 +356,7 @@ async def get_industrial_catalog(callback: types.CallbackQuery, state: FSMContex
             builder.row(
                 InlineKeyboardButton(
                     text=f"{product['name']} - {product['price']}₽",
-                    callback_data=f"home_product:{product['id']}"
+                    callback_data=f"industrial_product:{product['id']}"
                 ),
                 width=1
             )
