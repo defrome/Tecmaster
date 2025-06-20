@@ -150,22 +150,63 @@ async def handle_catalog(callback: types.CallbackQuery, state: FSMContext):
 async def add_to_cart(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
 
+
 @dp.callback_query(F.data == 'catalog:pro')
 async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
     try:
         await callback.answer()
         await state.clear()
+
+        # Получаем товары из БД (заглушка)
+        pro_products = [
+            {"id": "pro1", "name": "Профессиональный окрасочный аппарат X500", "price": 125000},
+            {"id": "pro2", "name": "Промышленный распылитель W850", "price": 189000},
+            {"id": "pro3", "name": "Компрессорная станция PRO-3000", "price": 235000}
+        ]
+
         builder = InlineKeyboardBuilder()
+
+        # Добавляем товары в клавиатуру
+        for product in pro_products:
+            builder.row(
+                InlineKeyboardButton(
+                    text=f"{product['name']} - {product['price']}₽",
+                    callback_data=f"product:{product['id']}"
+                ),
+                width=1
+            )
+
+        # Кнопки управления
         builder.row(
             InlineKeyboardButton(
-                text="Тест каталог про 1",
-                callback_data="catalog:pro"
+                text="↩️ Назад в каталог",
+                callback_data="catalog"
             ),
-            width=1
+            InlineKeyboardButton(
+                text="🏠 На главную",
+                callback_data="home"
+            ),
+            width=2
         )
+
+        # Отправляем сообщение
+        await callback.message.edit_text(
+            text="<b>🔧 Профессиональное оборудование</b>\n\n"
+                 "Выберите товар из категории:",
+            reply_markup=builder.as_markup(),
+            parse_mode="HTML"
+        )
+
+        # Сохраняем состояние просмотра категории
+        await state.set_state(CatalogStates.viewing_pro_category)
+        await state.update_data(category="pro", products=pro_products)
+
     except Exception as e:
-        logger.error(f"Pro catalog error {e}")
-        await callback.message.answer("Ошибка")
+        logger.error(f"Pro catalog error: {e}", exc_info=True)
+        await callback.message.answer(
+            "⚠️ Произошла ошибка при загрузке профессионального каталога",
+            reply_markup=back.as_markup()
+        )
 
 
 
