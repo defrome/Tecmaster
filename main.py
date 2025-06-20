@@ -150,6 +150,27 @@ async def handle_catalog(callback: types.CallbackQuery, state: FSMContext):
 async def add_to_cart(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
 
+@dp.callback_query(F.data == 'catalog:pro')
+async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
+    try:
+        await callback.answer()
+        await state.clear()
+        builder = InlineKeyboardBuilder()
+        builder.row(
+            InlineKeyboardButton(
+                text="Тест каталог про 1",
+                callback_data="catalog:pro"
+            ),
+            width=1
+        )
+    except Exception as e:
+        logger.error(f"Pro catalog error {e}")
+        await callback.message.answer("Ошибка")
+
+
+
+
+
 
 
 @dp.callback_query(F.data == "about")
