@@ -227,7 +227,7 @@ home_products = [
 
 
 @dp.callback_query(F.data == 'catalog:pro')
-async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
+async def get_home_catalog(callback: types.CallbackQuery, state: FSMContext):
     global last_message_id
     try:
         await callback.answer()
@@ -241,7 +241,7 @@ async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
             builder.row(
                 InlineKeyboardButton(
                     text=f"{product['name']} - {product['price']}₽",
-                    callback_data=f"product:{product['id']}"  # Формат product:pro1
+                    callback_data=f"pro_product:{product['id']}"
                 ),
                 width=1
             )
@@ -270,9 +270,9 @@ async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
         await state.update_data(category="pro", products=pro_products)
 
     except Exception as e:
-        logger.error(f"Pro catalog error: {e}", exc_info=True)
+        logger.error(f"Home catalog error: {e}", exc_info=True)
         await callback.message.answer(
-            "⚠️ Произошла ошибка при загрузке профессионального каталога",
+            "⚠️ Произошла ошибка при загрузке каталога",
             reply_markup=back.as_markup()
         )
 
@@ -327,6 +327,69 @@ async def get_home_catalog(callback: types.CallbackQuery, state: FSMContext):
         )
 
 
+@dp.callback_query(F.data.startswith('pro_product:'))
+async def handle_product(callback: types.CallbackQuery, state: FSMContext):
+    global last_message_id
+    try:
+        await callback.answer()
+        await state.clear()
+        await delete_previous_message(callback.message.chat.id)
+
+        product_id = callback.data.split(':')[1]
+        product = next((p for p in pro_products if p['id'] == product_id), None)
+
+        if not product:
+            await callback.message.answer("Товар не найден")
+            return
+
+        builder = InlineKeyboardBuilder()
+
+
+        builder.row(
+            InlineKeyboardButton(
+                text='🛒 Добавить в корзину',
+                callback_data=f"add_to_cart:{product['id']}"
+            ),
+            width=1
+        )
+
+        builder.row(
+            InlineKeyboardButton(
+                text="↩️ Назад в каталог",
+                callback_data="catalog:pro"  # Возврат в нужный каталог
+            ),
+            InlineKeyboardButton(
+                text="🏠 На главную",
+                callback_data="home"
+            ),
+            width=2
+        )
+
+        product_info = (
+            f"<b>{product['name']}</b>\n\n"
+            f"💵 Цена: {product['price']}₽\n"
+            f"📦 Артикул: {product['id']}\n\n"
+            f" Характеристики: {product['description']}\n\n"
+        )
+
+        msg = await callback.message.answer(
+            text=product_info,
+            reply_markup=builder.as_markup(),
+            parse_mode="HTML"
+        )
+        last_message_id = msg.message_id
+
+        await state.set_state(CatalogStates.viewing_item)
+        await state.update_data(current_product=product)
+
+    except Exception as e:
+        logger.error(f"Product error: {e}", exc_info=True)
+        await callback.message.answer(
+            "⚠️ Произошла ошибка при загрузке товара",
+            reply_markup=back.as_markup()
+        )
+
+
 @dp.callback_query(F.data.startswith('home_product:'))
 async def handle_product(callback: types.CallbackQuery, state: FSMContext):
     global last_message_id
@@ -356,7 +419,7 @@ async def handle_product(callback: types.CallbackQuery, state: FSMContext):
         builder.row(
             InlineKeyboardButton(
                 text="↩️ Назад в каталог",
-                callback_data="catalog:pro"  # Возврат в нужный каталог
+                callback_data="catalog:home"  # Возврат в нужный каталог
             ),
             InlineKeyboardButton(
                 text="🏠 На главную",
