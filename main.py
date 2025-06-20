@@ -24,15 +24,6 @@ logger = logging.getLogger(__name__)
 bot = Bot(token="7783836620:AAEKekan25gE2N6UOw3_xMWaHDVUSEh_Gc0")
 dp = Dispatcher()
 
-@dataclass
-class CartItem:
-    product_id: int
-    name: str
-    price: float
-    quantity: int
-
-user_carts: Dict[int, List[CartItem]] = {}
-
 
 # Обработчики
 @dp.message(Command("start"))
