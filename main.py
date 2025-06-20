@@ -225,6 +225,44 @@ async def get_catalog_home(callback: types.CallbackQuery, state: FSMContext):
 
         builder =  InlineKeyboardBuilder()
 
+        for product in home_products:
+            builder.row(
+                InlineKeyboardButton(
+                    text=f"f{product['name']} - {product['price']}",
+                    callback_data=f"product:{product['id']}"
+                ),
+                width=1
+            )
+
+        builder.row(
+            InlineKeyboardButton(
+                text="↩️ Назад в каталог",
+                callback_data="catalog"
+            ),
+            InlineKeyboardButton(
+                text="🏠 На главную",
+                callback_data="home"
+            ),
+            width=2
+        )
+
+        await callback.message.edit_text(
+            text="<b>🔧 Оборудование для дома</b>\n\n"
+                 "Выберите товар из категории:",
+            reply_markup=builder.as_markup(),
+            parse_mode="HTML"
+        )
+
+        await state.set_state(CatalogStates.viewing_home_category)
+        await state.update_data(category="home", products=home_products)
+
+    except Exception as e:
+        logger.error(f"Home catalog error: {e}", exc_info=True)
+        await callback.message.answer(
+            "⚠️ Произошла ошибка при загрузке домашнего каталога",
+            reply_markup=back.as_markup()
+        )
+
 
 
 @dp.callback_query(F.data == "about")
