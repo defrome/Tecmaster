@@ -8,6 +8,7 @@ class CatalogStates(StatesGroup):
     in_search = State()  # Поиск по каталогу
     viewing_pro_category = State()
     viewing_home_category = State()
+    viewing_industrial_category = State()
 
 class CartStates(StatesGroup):
     viewing_cart = State()
