@@ -1,5 +1,7 @@
 import asyncio
 import logging
+from typing import Dict, List
+
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters.command import Command
 from aiogram.fsm.context import FSMContext
@@ -29,6 +31,7 @@ class CartItem:
     price: float
     quantity: int
 
+user_carts: Dict[int, List[CartItem]] = {}
 
 
 # Обработчики
