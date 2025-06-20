@@ -6,3 +6,7 @@ class CatalogStates(StatesGroup):
     browsing_category = State()  # Просмотр категории
     viewing_item = State()  # Детали товара
     in_search = State()  # Поиск по каталогу
+
+class CartStates(StatesGroup):
+    viewing_cart = State()
+    items_in_cart = State()

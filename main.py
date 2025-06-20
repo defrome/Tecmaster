@@ -8,7 +8,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from keyboards.user_keyboards import builder, back
-from states.states import CatalogStates
+from states.states import CatalogStates, CartStates
 
 # Настройка логирования
 logging.basicConfig(
@@ -29,7 +29,7 @@ dp = Dispatcher()
 async def cmd_start(message: types.Message):
     try:
         caption = (
-            "🎨 <b>TECMASTER</b> – символ передовых технологий в области механизированной окраски\n\n"
+            "   <b>TECMASTER</b> – символ передовых технологий в области механизированной окраски\n\n"
             "🔹 <i>Профессиональные решения</i> для любых задач\n"
             "🔹 <i>Доступные инструменты</i> для частных мастеров\n"
             "🔹 <i>Инновационные подходы</i> в нанесении покрытий\n\n"
@@ -62,7 +62,7 @@ async def handle_home(callback: types.CallbackQuery, state: FSMContext):
         await state.clear()
 
         caption = (
-            "🎨 <b>TECMASTER</b> – символ передовых технологий в области механизированной окраски\n\n"
+            "   <b>TECMASTER</b> – символ передовых технологий в области механизированной окраски\n\n"
             "🔹 <i>Профессиональные решения</i> для любых задач\n"
             "🔹 <i>Доступные инструменты</i> для частных мастеров\n"
             "🔹 <i>Инновационные подходы</i> в нанесении покрытий\n\n"
@@ -186,7 +186,7 @@ async def handle_about(callback: types.CallbackQuery, state: FSMContext):
 async def handle_cart(callback: types.CallbackQuery, state: FSMContext):
     try:
         await callback.answer()
-
+        await state.clear()
         if callback.message.content_type == "text":
             await callback.message.edit_text(
                 text="🛒 Ваша корзина пуста\n\n"
@@ -201,6 +201,9 @@ async def handle_cart(callback: types.CallbackQuery, state: FSMContext):
                 reply_markup=back.as_markup(),
                 parse_mode="HTML"
             )
+
+        await state.set_state(CartStates.viewing_cart)
+
 
     except Exception as e:
         logger.error(f"Cart error: {e}")
