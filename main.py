@@ -204,101 +204,44 @@ pro_products = [
     }
 ]
 
+home_products = [
+    {
+        "id": "pro1",
+        "name": "Домашний окрасочный аппарат X500",
+        "price": 125000,
+        "description": "Мощный аппарат для профессионального использования"
+    },
+    {
+        "id": "pro2",
+        "name": "Промышленный распылитель W850",
+        "price": 189000,
+        "description": "Высокопроизводительный распылитель для промышленных работ"
+    },
+    {
+        "id": "pro3",
+        "name": "Компрессорная станция PRO-3000",
+        "price": 235000,
+        "description": "Профессиональная компрессорная станция"
+    }
+]
 
-@dp.callback_query(F.data.startswith('product:'))
-async def handle_product(callback: types.CallbackQuery, state: FSMContext):
+
+@dp.callback_query(F.data == 'catalog:pro')
+async def get_pro_catalog(callback: types.CallbackQuery, state: FSMContext):
     global last_message_id
     try:
         await callback.answer()
         await state.clear()
         await delete_previous_message(callback.message.chat.id)
 
-        product_id = callback.data.split(':')[1]
-        # Находим продукт в списке
-        product = next((p for p in pro_products if p['id']), None)
-
-        if not product:
-            await callback.message.answer("Товар не найден")
-            return
-
         builder = InlineKeyboardBuilder()
 
-        builder.row(
-            InlineKeyboardButton(
-                text='📝 Описание товара',
-                callback_data=f"product_description:{product['id']}"
-            ),
-            width=1
-        )
-
-        builder.row(
-            InlineKeyboardButton(
-                text='🛒 Добавить в корзину',
-                callback_data=f"add_to_cart:{product['id']}"
-            ),
-            width=1
-        )
-
-        builder.row(
-            InlineKeyboardButton(
-                text="↩️ Назад в каталог",
-                callback_data="catalog"
-            ),
-            InlineKeyboardButton(
-                text="🏠 На главную",
-                callback_data="home"
-            ),
-            width=2
-        )
-
-        product_info = (
-            f"<b>{product['name']}</b>\n\n"
-            f"💵 Цена: {product['price']}₽\n"
-            f"📦 Артикул: {product['id']}\n\n"
-        )
-
-        msg = await callback.message.answer(
-            text=product_info,
-            reply_markup=builder.as_markup(),
-            parse_mode="HTML"
-        )
-        last_message_id = msg.message_id
-
-        await state.set_state(CatalogStates.viewing_item)
-        await state.update_data(
-            current_product=product,
-            previous_category="pro"
-        )
-
-    except Exception as e:
-        logger.error(f"Product error: {e}", exc_info=True)
-        await callback.message.answer(
-            "⚠️ Произошла ошибка при загрузке товара",
-            reply_markup=back.as_markup()
-        )
-
-
-@dp.callback_query(F.data == 'catalog:home')
-async def get_catalog_home(callback: types.CallbackQuery, state: FSMContext):
-    global last_message_id
-    try:
-        await callback.answer()
-        await state.clear()
-        await delete_previous_message(callback.message.chat.id)
-
-        home_products = [
-            {"id": "home1", "name": "test1", "price": 125000},
-            {"id": "home2", "name": "test2", "price": 189000},
-            {"id": "home3", "name": "test3", "price": 235000}
-        ]
-
-        builder = InlineKeyboardBuilder()
-
-        for product in home_products:
+        # Используем глобальный список продуктов
+        for product in pro_products:
             builder.row(
                 InlineKeyboardButton(
-                    text=f"f{product['name']} - {product['price']}",
-                    callback_data=f"product:{product['id']}"
+                    text=f"{product['name']} - {product['price']}₽",
+                    callback_data=f"product:{product['id']}"  # Формат product:pro1
                 ),
                 width=1
             )
@@ -316,14 +259,64 @@ async def get_catalog_home(callback: types.CallbackQuery, state: FSMContext):
         )
 
         msg = await callback.message.answer(
-            text="<b>🔧 Оборудование для дома</b>\n\n"
+            text="<b>🔧 Профессиональное оборудование</b>\n\n"
                  "Выберите товар из категории:",
             reply_markup=builder.as_markup(),
             parse_mode="HTML"
         )
         last_message_id = msg.message_id
 
-        await state.set_state(CatalogStates.viewing_home_category)
+        await state.set_state(CatalogStates.viewing_pro_category)
+        await state.update_data(category="pro", products=pro_products)
+
+    except Exception as e:
+        logger.error(f"Pro catalog error: {e}", exc_info=True)
+        await callback.message.answer(
+            "⚠️ Произошла ошибка при загрузке профессионального каталога",
+            reply_markup=back.as_markup()
+        )
+
+@dp.callback_query(F.data == 'catalog:home')
+async def get_home_catalog(callback: types.CallbackQuery, state: FSMContext):
+    global last_message_id
+    try:
+        await callback.answer()
+        await state.clear()
+        await delete_previous_message(callback.message.chat.id)
+
+        builder = InlineKeyboardBuilder()
+
+        # Используем глобальный список продуктов
+        for product in home_products:
+            builder.row(
+                InlineKeyboardButton(
+                    text=f"{product['name']} - {product['price']}₽",
+                    callback_data=f"product:{product['id']}"  # Формат product:pro1
+                ),
+                width=1
+            )
+
+        builder.row(
+            InlineKeyboardButton(
+                text="↩️ Назад в каталог",
+                callback_data="catalog"
+            ),
+            InlineKeyboardButton(
+                text="🏠 На главную",
+                callback_data="home"
+            ),
+            width=2
+        )
+
+        msg = await callback.message.answer(
+            text="<b>🔧 Профессиональное оборудование</b>\n\n"
+                 "Выберите товар из категории:",
+            reply_markup=builder.as_markup(),
+            parse_mode="HTML"
+        )
+        last_message_id = msg.message_id
+
+        await state.set_state(CatalogStates.viewing_pro_category)
         await state.update_data(category="home", products=home_products)
 
     except Exception as e:
@@ -334,60 +327,8 @@ async def get_catalog_home(callback: types.CallbackQuery, state: FSMContext):
         )
 
 
-@dp.callback_query(F.data == 'catalog:industrial')
-async def get_industrial_catalog(callback: types.CallbackQuery, state: FSMContext):
-    global last_message_id
-    try:
-        await callback.answer()
-        await state.clear()
-        await delete_previous_message(callback.message.chat.id)
 
-        industrial_products = [
-            {"id": "pro1", "name": "Профессиональный окрасочный аппарат X500", "price": 125000},
-            {"id": "pro2", "name": "Промышленный распылитель W850", "price": 189000},
-            {"id": "pro3", "name": "Компрессорная станция PRO-3000", "price": 235000}
-        ]
 
-        builder = InlineKeyboardBuilder()
-
-        for product in industrial_products:
-            builder.row(
-                InlineKeyboardButton(
-                    text=f"{product['name']} - {product['price']}₽",
-                    callback_data=f"product:{product['id']}"
-                ),
-                width=1
-            )
-
-        builder.row(
-            InlineKeyboardButton(
-                text="↩️ Назад в каталог",
-                callback_data="catalog"
-            ),
-            InlineKeyboardButton(
-                text="🏠 На главную",
-                callback_data="home"
-            ),
-            width=2
-        )
-
-        msg = await callback.message.answer(
-            text="<b>🔧 Индустриальное оборудование</b>\n\n"
-                 "Выберите товар из категории:",
-            reply_markup=builder.as_markup(),
-            parse_mode="HTML"
-        )
-        last_message_id = msg.message_id
-
-        await state.set_state(CatalogStates.viewing_industrial_category)
-        await state.update_data(category="industrial", products=industrial_products)
-
-    except Exception as e:
-        logger.error(f"Pro catalog error: {e}", exc_info=True)
-        await callback.message.answer(
-            "⚠️ Произошла ошибка при загрузке профессионального каталога",
-            reply_markup=back.as_markup()
-        )
 
 
 @dp.callback_query(F.data == "about")
