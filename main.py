@@ -23,6 +23,8 @@ dp = Dispatcher()
 # Глобальная переменная для хранения ID последнего сообщения
 last_message_id = None
 
+cart = {}
+
 
 async def delete_previous_message(chat_id: int):
     global last_message_id
